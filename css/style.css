@@ -1,0 +1,613 @@
+/* ================================
+   CONFIGURACIÓN GENERAL
+================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background:
+        radial-gradient(circle at top, #fffaf4, #f7eee6);
+
+    color: #392d2b;
+
+    font-family:
+        "Cormorant Garamond",
+        Georgia,
+        serif;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    background-image:
+        radial-gradient(
+            rgba(120, 70, 70, 0.07) 1px,
+            transparent 1px
+        );
+
+    background-size: 18px 18px;
+
+    opacity: 0.35;
+}
+
+
+/* ================================
+   CONTENEDOR
+================================ */
+
+#pagina {
+    width: 100%;
+    overflow: hidden;
+}
+
+
+/* ================================
+   PORTADA
+================================ */
+
+.hero {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    padding: 40px 24px;
+
+    text-align: center;
+}
+
+.nombre {
+    font-size: 52px;
+    font-weight: 600;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 60px;
+}
+
+.instruccion {
+    font-family: "Montserrat", sans-serif;
+
+    font-size: 12px;
+    text-transform: uppercase;
+
+    letter-spacing: 3px;
+
+    color: #8a7772;
+
+    margin-bottom: 24px;
+}
+
+
+/* ================================
+   CORAZÓN
+================================ */
+
+.heart-button {
+    width: 105px;
+    height: 105px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: transparent;
+
+    color: #a53c49;
+
+    font-size: 85px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        filter 0.25s ease;
+
+    filter:
+        drop-shadow(
+            0 10px 20px rgba(165, 60, 73, 0.18)
+        );
+}
+
+.heart-button:hover {
+    transform: scale(1.08);
+}
+
+.heart-button:active {
+    transform: scale(0.87);
+}
+
+.heart-button.latido {
+    animation: latido 0.45s ease;
+}
+
+@keyframes latido {
+
+    0% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.3);
+    }
+
+    65% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+/* ================================
+   PROGRESO
+================================ */
+
+.progress-container {
+    width: min(300px, 80%);
+
+    margin-top: 35px;
+
+    font-family: "Montserrat", sans-serif;
+
+    font-size: 12px;
+
+    color: #8b7773;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 3px;
+
+    background: #ded1cb;
+
+    overflow: hidden;
+
+    margin-bottom: 12px;
+}
+
+.progress {
+    width: 0;
+    height: 100%;
+
+    background: #a53c49;
+
+    transition: width 0.3s ease;
+}
+
+
+/* ================================
+   CONTENIDO BLOQUEADO
+================================ */
+
+.contenido {
+    transition:
+        opacity 1s ease,
+        transform 1s ease;
+}
+
+.bloqueado {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+
+    transform: translateY(30px);
+}
+
+.desbloqueado {
+    opacity: 1;
+    height: auto;
+
+    transform: translateY(0);
+}
+
+
+/* ================================
+   TÍTULO
+================================ */
+
+.titulo-principal {
+    min-height: 65vh;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    padding: 80px 25px;
+}
+
+.subtitulo {
+    font-family: "Montserrat", sans-serif;
+
+    text-transform: uppercase;
+
+    letter-spacing: 4px;
+
+    color: #967d77;
+
+    font-size: 11px;
+
+    margin-bottom: 25px;
+}
+
+.titulo-principal h1 {
+    max-width: 700px;
+
+    font-size: clamp(45px, 8vw, 85px);
+
+    line-height: 0.95;
+
+    font-weight: 500;
+}
+
+
+/* ================================
+   GALERÍA
+================================ */
+
+.galeria {
+    width: min(900px, 90%);
+
+    min-height: 680px;
+
+    margin: 0 auto;
+
+    position: relative;
+}
+
+.foto {
+    position: absolute;
+
+    background: white;
+
+    padding: 10px 10px 35px;
+
+    box-shadow:
+        0 20px 45px rgba(50, 30, 30, 0.18);
+
+    transition:
+        transform 0.5s ease,
+        z-index 0s;
+}
+
+.foto img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.foto-1 {
+    width: 43%;
+
+    left: 2%;
+    top: 50px;
+
+    transform: rotate(-7deg);
+}
+
+.foto-2 {
+    width: 43%;
+
+    right: 3%;
+    top: 0;
+
+    transform: rotate(7deg);
+}
+
+.foto-3 {
+    width: 45%;
+
+    left: 28%;
+    top: 280px;
+
+    transform: rotate(-1deg);
+}
+
+.foto:hover {
+    z-index: 20;
+
+    transform:
+        rotate(0deg)
+        scale(1.05);
+}
+
+
+/* ================================
+   SEPARADOR
+================================ */
+
+.separador {
+    padding: 130px 20px;
+
+    text-align: center;
+}
+
+.separador p {
+    font-family: "Montserrat", sans-serif;
+
+    letter-spacing: 3px;
+
+    text-transform: uppercase;
+
+    font-size: 11px;
+
+    color: #927a74;
+}
+
+.emojis {
+    margin-top: 35px;
+
+    font-size: 35px;
+
+    letter-spacing: 10px;
+}
+
+
+/* ================================
+   CARTA
+================================ */
+
+.carta {
+    width: min(650px, 85%);
+
+    margin: auto;
+
+    padding: 40px 0 130px;
+
+    text-align: center;
+}
+
+.carta p {
+    margin-bottom: 35px;
+
+    font-size: clamp(28px, 5vw, 43px);
+
+    line-height: 1.25;
+
+    font-weight: 400;
+}
+
+.carta .destacado {
+    color: #a33e4a;
+
+    font-size: clamp(40px, 7vw, 65px);
+
+    font-style: italic;
+}
+
+
+/* ================================
+   CELEBRACIÓN
+================================ */
+
+.celebracion {
+    padding: 110px 20px;
+
+    text-align: center;
+
+    background: #3d2f2d;
+
+    color: #fff9f3;
+}
+
+.copas {
+    font-size: 38px;
+
+    margin-bottom: 20px;
+}
+
+.estrellas {
+    font-size: 22px;
+
+    letter-spacing: 10px;
+
+    margin-bottom: 60px;
+}
+
+.celebracion h2 {
+    max-width: 700px;
+
+    margin: auto;
+
+    font-size: clamp(50px, 8vw, 90px);
+
+    line-height: 0.95;
+
+    font-weight: 400;
+}
+
+
+/* ================================
+   FOTO FINAL
+================================ */
+
+.foto-final {
+    padding: 140px 20px;
+
+    display: flex;
+    justify-content: center;
+}
+
+.marco-final {
+    width: min(600px, 90%);
+
+    background: white;
+
+    padding: 13px 13px 45px;
+
+    box-shadow:
+        0 25px 60px rgba(50, 30, 30, 0.2);
+
+    transform: rotate(-2deg);
+}
+
+.marco-final img {
+    width: 100%;
+
+    display: block;
+
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+}
+
+
+/* ================================
+   DESPEDIDA
+================================ */
+
+.despedida {
+    padding: 60px 20px 140px;
+
+    text-align: center;
+}
+
+.despedida h2 {
+    font-size: clamp(42px, 7vw, 72px);
+
+    line-height: 1;
+
+    font-weight: 400;
+
+    margin-bottom: 70px;
+}
+
+.save-button {
+    border: 1px solid #8c6d68;
+
+    background: transparent;
+
+    color: #493835;
+
+    padding: 18px 32px;
+
+    border-radius: 50px;
+
+    font-family: "Montserrat", sans-serif;
+
+    font-size: 12px;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.save-button:hover {
+    background: #3d2f2d;
+
+    color: white;
+
+    transform: translateY(-3px);
+}
+
+
+/* ================================
+   FOOTER
+================================ */
+
+footer {
+    padding: 60px 20px;
+
+    text-align: center;
+
+    font-family: "Montserrat", sans-serif;
+
+    font-size: 11px;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+
+    color: #917c77;
+}
+
+footer span {
+    display: block;
+
+    margin-top: 15px;
+
+    color: #a53c49;
+
+    font-size: 20px;
+}
+
+
+/* ================================
+   MÓVIL
+================================ */
+
+@media (max-width: 600px) {
+
+    .nombre {
+        font-size: 45px;
+    }
+
+    .hero {
+        min-height: 100svh;
+    }
+
+    .galeria {
+        min-height: 510px;
+    }
+
+    .foto {
+        padding: 7px 7px 25px;
+    }
+
+    .foto-1 {
+        width: 55%;
+        left: -2%;
+        top: 40px;
+    }
+
+    .foto-2 {
+        width: 55%;
+        right: -3%;
+        top: 20px;
+    }
+
+    .foto-3 {
+        width: 58%;
+        left: 21%;
+        top: 235px;
+    }
+
+    .separador {
+        padding:
+            90px
+            20px;
+    }
+
+    .celebracion {
+        padding:
+            90px
+            20px;
+    }
+
+}
