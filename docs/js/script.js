@@ -13,6 +13,9 @@ const contenido =
 const saveButton =
     document.getElementById("saveButton");
 
+const cancion =
+    document.getElementById("cancion");
+
 
 let valor = 0;
 let desbloqueado = false;
@@ -29,6 +32,8 @@ heartButton.addEventListener(
         if (desbloqueado) {
             return;
         }
+
+        
 
         valor += 10;
 
@@ -75,6 +80,10 @@ heartButton.addEventListener(
                 abrirRegalo,
                 700
             );
+
+            if (cancion) {
+                cancion.play();
+            }
 
         }
 
