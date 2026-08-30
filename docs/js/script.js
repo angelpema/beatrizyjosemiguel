@@ -17,177 +17,407 @@ const contenido =
 const saveButton =
     document.getElementById("saveButton");
 
-const cancion =
-    document.getElementById("cancion");
-
 
 /* =========================================================
-   VARIABLES
+   VARIABLES CORAZÓN
 ========================================================= */
 
 let valor = 0;
 let desbloqueado = false;
+
+
+/* =========================================================
+   AUDIO - WEB AUDIO API
+========================================================= */
+
+let audioContext = null;
+let audioBuffer = null;
+let audioCargando = false;
 let audioPreparado = false;
+let fuenteAudio = null;
+
+
+/* =========================================================
+   PREPARAR AUDIO PARA IPHONE
+========================================================= */
+
+async function prepararAudio() {
+
+    if (audioPreparado || audioCargando) {
+        return;
+    }
+
+    audioCargando = true;
+
+    try {
+
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+
+        /* Crear contexto */
+
+        if (!audioContext) {
+
+            audioContext =
+                new AudioContext();
+
+        }
+
+
+        /* IMPORTANTE PARA IPHONE */
+
+        if (audioContext.state === "suspended") {
+
+            await audioContext.resume();
+
+        }
+
+
+        console.log(
+            "AudioContext:",
+            audioContext.state
+        );
+
+
+        /* Descargar canción */
+
+        const respuesta =
+            await fetch(
+                "static/songs/cancion2.m4a"
+            );
+
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                "No se pudo cargar la canción"
+            );
+
+        }
+
+
+        const arrayBuffer =
+            await respuesta.arrayBuffer();
+
+
+        /* Decodificar canción */
+
+        audioBuffer =
+            await audioContext.decodeAudioData(
+                arrayBuffer
+            );
+
+
+        audioPreparado = true;
+
+
+        console.log(
+            "Canción preparada correctamente"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR preparando audio:",
+            error
+        );
+
+    }
+
+    audioCargando = false;
+
+}
+
+
+/* =========================================================
+   REPRODUCIR CANCIÓN
+========================================================= */
+
+async function reproducirCancion() {
+
+    try {
+
+        if (!audioContext) {
+
+            console.log(
+                "No existe AudioContext"
+            );
+
+            return;
+
+        }
+
+
+        if (audioContext.state === "suspended") {
+
+            await audioContext.resume();
+
+        }
+
+
+        /* Si todavía está cargando */
+
+        if (!audioBuffer) {
+
+            console.log(
+                "Esperando a que cargue la canción..."
+            );
+
+
+            let intentos = 0;
+
+
+            while (
+                !audioBuffer &&
+                intentos < 100
+            ) {
+
+                await new Promise(
+                    function (resolve) {
+
+                        setTimeout(
+                            resolve,
+                            100
+                        );
+
+                    }
+                );
+
+
+                intentos++;
+
+            }
+
+        }
+
+
+        if (!audioBuffer) {
+
+            console.log(
+                "No se pudo cargar la canción"
+            );
+
+            return;
+
+        }
+
+
+        /* Parar canción anterior */
+
+        if (fuenteAudio) {
+
+            try {
+
+                fuenteAudio.stop();
+
+            } catch (error) {
+
+                console.log(error);
+
+            }
+
+        }
+
+
+        /* Crear fuente */
+
+        fuenteAudio =
+            audioContext.createBufferSource();
+
+
+        fuenteAudio.buffer =
+            audioBuffer;
+
+
+        /* Repetir canción */
+
+        fuenteAudio.loop =
+            true;
+
+
+        /* Control de volumen */
+
+        const gainNode =
+            audioContext.createGain();
+
+
+        gainNode.gain.value =
+            0.8;
+
+
+        fuenteAudio.connect(
+            gainNode
+        );
+
+
+        gainNode.connect(
+            audioContext.destination
+        );
+
+
+        /* EMPEZAR */
+
+        fuenteAudio.start(0);
+
+
+        console.log(
+            "🎵 CANCIÓN REPRODUCIÉNDOSE"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR reproduciendo canción:",
+            error
+        );
+
+    }
+
+}
 
 
 /* =========================================================
    CORAZÓN
 ========================================================= */
 
-heartButton.addEventListener("click", function () {
-
-    /* =====================================================
-       PREPARAR AUDIO PARA IPHONE
-       Safari necesita que play() ocurra tras un toque
-    ===================================================== */
-
-    if (!audioPreparado) {
-
-        cancion.volume = 0;
-
-        const promesaAudio = cancion.play();
-
-        if (promesaAudio !== undefined) {
-
-            promesaAudio
-                .then(function () {
-
-                    cancion.pause();
-
-                    cancion.currentTime = 0;
-
-                    cancion.volume = 0.7;
-
-                    audioPreparado = true;
-
-                    console.log(
-                        "Audio preparado correctamente"
-                    );
-
-                })
-                .catch(function (error) {
-
-                    console.log(
-                        "No se pudo preparar el audio:",
-                        error
-                    );
-
-                });
-
-        }
-
-    }
+heartButton.addEventListener(
+    "click",
+    async function () {
 
 
-    /* =====================================================
-       SI YA ESTÁ DESBLOQUEADO NO HACER NADA MÁS
-    ===================================================== */
+        /* =================================================
+           PRIMER TOQUE:
+           DESBLOQUEAR AUDIO EN IPHONE
+        ================================================= */
 
-    if (desbloqueado) {
-        return;
-    }
+        if (!audioContext) {
 
-
-    /* =====================================================
-       AUMENTAR PORCENTAJE
-    ===================================================== */
-
-    valor += 10;
-
-    if (valor > 100) {
-        valor = 100;
-    }
+            const AudioContext =
+                window.AudioContext ||
+                window.webkitAudioContext;
 
 
-    percentage.textContent =
-        valor + "%";
-
-    progress.style.width =
-        valor + "%";
+            audioContext =
+                new AudioContext();
 
 
-    /* =====================================================
-       ANIMACIÓN DEL CORAZÓN
-    ===================================================== */
+            try {
 
-    heartButton
-        .classList
-        .remove("latido");
-
-    void heartButton.offsetWidth;
-
-    heartButton
-        .classList
-        .add("latido");
+                await audioContext.resume();
 
 
-    /* =====================================================
-       VIBRACIÓN
-    ===================================================== */
-
-    if (navigator.vibrate) {
-
-        navigator.vibrate(30);
-
-    }
+                console.log(
+                    "Audio desbloqueado:",
+                    audioContext.state
+                );
 
 
-    /* =====================================================
-       CUANDO LLEGUE AL 100 %
-    ===================================================== */
+            } catch (error) {
 
-    if (valor === 100) {
+                console.error(
+                    "Error desbloqueando audio:",
+                    error
+                );
 
-        desbloqueado = true;
-
-
-        /* =============================================
-           REPRODUCIR CANCIÓN
-        ============================================= */
-
-        cancion.currentTime = 0;
-
-        cancion.volume = 0.7;
+            }
 
 
-        const reproduccion =
-            cancion.play();
+            /* Cargar canción */
 
-
-        if (reproduccion !== undefined) {
-
-            reproduccion
-                .then(function () {
-
-                    console.log(
-                        "Canción reproduciéndose"
-                    );
-
-                })
-                .catch(function (error) {
-
-                    console.log(
-                        "No se pudo reproducir la canción:",
-                        error
-                    );
-
-                });
+            prepararAudio();
 
         }
 
 
-        /* =============================================
-           ABRIR REGALO
-        ============================================= */
+        /* =================================================
+           CORAZÓN
+        ================================================= */
 
-        setTimeout(
-            abrirRegalo,
-            700
-        );
+        if (desbloqueado) {
+            return;
+        }
+
+
+        valor += 10;
+
+
+        if (valor > 100) {
+
+            valor = 100;
+
+        }
+
+
+        percentage.textContent =
+            valor + "%";
+
+
+        progress.style.width =
+            valor + "%";
+
+
+        /* =================================================
+           ANIMACIÓN
+        ================================================= */
+
+        heartButton
+            .classList
+            .remove("latido");
+
+
+        void heartButton.offsetWidth;
+
+
+        heartButton
+            .classList
+            .add("latido");
+
+
+        /* =================================================
+           VIBRACIÓN
+        ================================================= */
+
+        if (navigator.vibrate) {
+
+            navigator.vibrate(30);
+
+        }
+
+
+        /* =================================================
+           100 %
+        ================================================= */
+
+        if (valor === 100) {
+
+            desbloqueado = true;
+
+
+            console.log(
+                "100% alcanzado"
+            );
+
+
+            /* REPRODUCIR MÚSICA */
+
+            reproducirCancion();
+
+
+            /* ABRIR REGALO */
+
+            setTimeout(
+                abrirRegalo,
+                700
+            );
+
+        }
 
     }
-
-});
+);
 
 
 /* =========================================================
@@ -198,11 +428,16 @@ function abrirRegalo() {
 
     contenido
         .classList
-        .remove("bloqueado");
+        .remove(
+            "bloqueado"
+        );
+
 
     contenido
         .classList
-        .add("desbloqueado");
+        .add(
+            "desbloqueado"
+        );
 
 
     setTimeout(
@@ -231,7 +466,9 @@ if (saveButton) {
         async function () {
 
             const pagina =
-                document.getElementById("pagina");
+                document.getElementById(
+                    "pagina"
+                );
 
 
             saveButton.style.display =
@@ -247,7 +484,8 @@ if (saveButton) {
                             scale: 1.5,
                             useCORS: true,
                             allowTaint: false,
-                            backgroundColor: "#f7eee6",
+                            backgroundColor:
+                                "#f7eee6",
                             logging: false
                         }
                     );
@@ -290,13 +528,15 @@ if (saveButton) {
 
 
 /* =========================================================
-   MOSTRAR IMAGEN PARA GUARDAR EN IPHONE
+   MOSTRAR IMAGEN
 ========================================================= */
 
 function mostrarImagenParaGuardar(src) {
 
     const overlay =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     overlay.id =
@@ -314,25 +554,23 @@ function mostrarImagenParaGuardar(src) {
                 ×
             </button>
 
-
             <h2>
                 Tu recuerdo está listo ❤️
             </h2>
 
-
             <p>
                 En iPhone mantén pulsada
                 la imagen y selecciona
-                <strong>Guardar en Fotos</strong>.
+                <strong>
+                    Guardar en Fotos
+                </strong>.
             </p>
-
 
             <img
                 src="${src}"
                 id="imagen-generada"
                 alt="Nuestro momento"
             >
-
 
             <a
                 href="${src}"
@@ -344,7 +582,6 @@ function mostrarImagenParaGuardar(src) {
             </a>
 
         </div>
-
     `;
 
 
@@ -354,7 +591,9 @@ function mostrarImagenParaGuardar(src) {
 
 
     document
-        .getElementById("cerrar-guardar")
+        .getElementById(
+            "cerrar-guardar"
+        )
         .addEventListener(
             "click",
             function () {
