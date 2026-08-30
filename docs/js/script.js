@@ -116,42 +116,95 @@ function abrirRegalo() {
    GUARDAR MOMENTO
 ================================ */
 
-saveButton.addEventListener(
-    "click",
-    async function () {
+saveButton.addEventListener("click", async function () {
 
-        const pagina =
-            document.getElementById("pagina");
+    const pagina = document.getElementById("pagina");
 
-        saveButton.style.display =
-            "none";
+    saveButton.style.display = "none";
 
+    try {
 
-        const canvas =
-            await html2canvas(
-                pagina,
-                {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#f7eee6"
-                }
+        const canvas = await html2canvas(pagina, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#f7eee6"
+        });
+
+        canvas.toBlob(async function (blob) {
+
+            if (!blob) {
+                alert("No se pudo generar la imagen.");
+                return;
+            }
+
+            const archivo = new File(
+                [blob],
+                "nuestro-momento.png",
+                { type: "image/png" }
             );
 
+            /* ==========================
+               MÓVIL: COMPARTIR / GUARDAR
+            ========================== */
 
-        saveButton.style.display =
-            "inline-block";
+            if (
+                navigator.share &&
+                navigator.canShare &&
+                navigator.canShare({ files: [archivo] })
+            ) {
 
+                try {
 
-        const enlace =
-            document.createElement("a");
+                    await navigator.share({
+                        files: [archivo],
+                        title: "Nuestro momento"
+                    });
 
-        enlace.download =
-            "nuestro-momento.png";
+                } catch (error) {
 
-        enlace.href =
-            canvas.toDataURL("image/png");
+                    // Si el usuario cierra el menú de compartir
+                    console.log("Compartir cancelado", error);
 
-        enlace.click();
+                }
+
+            }
+
+            /* ==========================
+               PC / NAVEGADORES COMPATIBLES
+            ========================== */
+
+            else {
+
+                const url = URL.createObjectURL(blob);
+
+                const enlace = document.createElement("a");
+
+                enlace.href = url;
+                enlace.download = "nuestro-momento.png";
+
+                document.body.appendChild(enlace);
+
+                enlace.click();
+
+                enlace.remove();
+
+                setTimeout(function () {
+                    URL.revokeObjectURL(url);
+                }, 1000);
+            }
+
+        }, "image/png");
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Ha ocurrido un error al generar la imagen.");
+
+    } finally {
+
+        saveButton.style.display = "inline-block";
 
     }
-);
+
+});
