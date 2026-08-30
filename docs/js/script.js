@@ -1,3 +1,7 @@
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
 const heartButton =
     document.getElementById("heartButton");
 
@@ -17,83 +21,178 @@ const cancion =
     document.getElementById("cancion");
 
 
+/* =========================================================
+   VARIABLES
+========================================================= */
+
 let valor = 0;
 let desbloqueado = false;
+let audioPreparado = false;
 
 
-/* ===============================
+/* =========================================================
    CORAZÓN
-================================ */
+========================================================= */
 
-heartButton.addEventListener(
-    "click",
-    function () {
+heartButton.addEventListener("click", function () {
 
-        if (desbloqueado) {
-            return;
-        }
+    /* =====================================================
+       PREPARAR AUDIO PARA IPHONE
+       Safari necesita que play() ocurra tras un toque
+    ===================================================== */
 
-        
+    if (!audioPreparado) {
 
-        valor += 10;
+        cancion.volume = 0;
 
-        if (valor > 100) {
-            valor = 100;
-        }
+        const promesaAudio = cancion.play();
 
-        percentage.textContent =
-            valor + "%";
+        if (promesaAudio !== undefined) {
 
-        progress.style.width =
-            valor + "%";
+            promesaAudio
+                .then(function () {
 
+                    cancion.pause();
 
-        /* Animación del corazón */
+                    cancion.currentTime = 0;
 
-        heartButton
-            .classList
-            .remove("latido");
+                    cancion.volume = 0.7;
 
-        void heartButton.offsetWidth;
+                    audioPreparado = true;
 
-        heartButton
-            .classList
-            .add("latido");
+                    console.log(
+                        "Audio preparado correctamente"
+                    );
 
+                })
+                .catch(function (error) {
 
-        /* Vibración móvil */
+                    console.log(
+                        "No se pudo preparar el audio:",
+                        error
+                    );
 
-        if (navigator.vibrate) {
-
-            navigator.vibrate(30);
-
-        }
-
-
-        /* Al llegar al 100% */
-
-        if (valor === 100) {
-
-            desbloqueado = true;
-
-            setTimeout(
-                abrirRegalo,
-                700
-            );
-
-            if (cancion) {
-                cancion.play();
-            }
+                });
 
         }
 
     }
-);
 
 
-/* ===============================
+    /* =====================================================
+       SI YA ESTÁ DESBLOQUEADO NO HACER NADA MÁS
+    ===================================================== */
+
+    if (desbloqueado) {
+        return;
+    }
+
+
+    /* =====================================================
+       AUMENTAR PORCENTAJE
+    ===================================================== */
+
+    valor += 10;
+
+    if (valor > 100) {
+        valor = 100;
+    }
+
+
+    percentage.textContent =
+        valor + "%";
+
+    progress.style.width =
+        valor + "%";
+
+
+    /* =====================================================
+       ANIMACIÓN DEL CORAZÓN
+    ===================================================== */
+
+    heartButton
+        .classList
+        .remove("latido");
+
+    void heartButton.offsetWidth;
+
+    heartButton
+        .classList
+        .add("latido");
+
+
+    /* =====================================================
+       VIBRACIÓN
+    ===================================================== */
+
+    if (navigator.vibrate) {
+
+        navigator.vibrate(30);
+
+    }
+
+
+    /* =====================================================
+       CUANDO LLEGUE AL 100 %
+    ===================================================== */
+
+    if (valor === 100) {
+
+        desbloqueado = true;
+
+
+        /* =============================================
+           REPRODUCIR CANCIÓN
+        ============================================= */
+
+        cancion.currentTime = 0;
+
+        cancion.volume = 0.7;
+
+
+        const reproduccion =
+            cancion.play();
+
+
+        if (reproduccion !== undefined) {
+
+            reproduccion
+                .then(function () {
+
+                    console.log(
+                        "Canción reproduciéndose"
+                    );
+
+                })
+                .catch(function (error) {
+
+                    console.log(
+                        "No se pudo reproducir la canción:",
+                        error
+                    );
+
+                });
+
+        }
+
+
+        /* =============================================
+           ABRIR REGALO
+        ============================================= */
+
+        setTimeout(
+            abrirRegalo,
+            700
+        );
+
+    }
+
+});
+
+
+/* =========================================================
    ABRIR REGALO
-================================ */
+========================================================= */
 
 function abrirRegalo() {
 
@@ -121,99 +220,148 @@ function abrirRegalo() {
 }
 
 
-/* ===============================
+/* =========================================================
    GUARDAR MOMENTO
-================================ */
+========================================================= */
 
-saveButton.addEventListener("click", async function () {
+if (saveButton) {
 
-    const pagina = document.getElementById("pagina");
+    saveButton.addEventListener(
+        "click",
+        async function () {
 
-    saveButton.style.display = "none";
+            const pagina =
+                document.getElementById("pagina");
 
-    try {
 
-        const canvas = await html2canvas(pagina, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: "#f7eee6"
-        });
+            saveButton.style.display =
+                "none";
 
-        canvas.toBlob(async function (blob) {
 
-            if (!blob) {
-                alert("No se pudo generar la imagen.");
-                return;
+            try {
+
+                const canvas =
+                    await html2canvas(
+                        pagina,
+                        {
+                            scale: 1.5,
+                            useCORS: true,
+                            allowTaint: false,
+                            backgroundColor: "#f7eee6",
+                            logging: false
+                        }
+                    );
+
+
+                const imagen =
+                    canvas.toDataURL(
+                        "image/jpeg",
+                        0.92
+                    );
+
+
+                mostrarImagenParaGuardar(
+                    imagen
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error generando imagen:",
+                    error
+                );
+
+
+                alert(
+                    "No se ha podido generar la imagen."
+                );
+
             }
 
-            const archivo = new File(
-                [blob],
-                "nuestro-momento.png",
-                { type: "image/png" }
-            );
 
-            /* ==========================
-               MÓVIL: COMPARTIR / GUARDAR
-            ========================== */
+            saveButton.style.display =
+                "inline-block";
 
-            if (
-                navigator.share &&
-                navigator.canShare &&
-                navigator.canShare({ files: [archivo] })
-            ) {
+        }
+    );
 
-                try {
+}
 
-                    await navigator.share({
-                        files: [archivo],
-                        title: "Nuestro momento"
-                    });
 
-                } catch (error) {
+/* =========================================================
+   MOSTRAR IMAGEN PARA GUARDAR EN IPHONE
+========================================================= */
 
-                    // Si el usuario cierra el menú de compartir
-                    console.log("Compartir cancelado", error);
+function mostrarImagenParaGuardar(src) {
 
-                }
+    const overlay =
+        document.createElement("div");
+
+
+    overlay.id =
+        "guardar-overlay";
+
+
+    overlay.innerHTML = `
+
+        <div class="guardar-contenido">
+
+            <button
+                id="cerrar-guardar"
+                class="cerrar-guardar"
+                type="button">
+                ×
+            </button>
+
+
+            <h2>
+                Tu recuerdo está listo ❤️
+            </h2>
+
+
+            <p>
+                En iPhone mantén pulsada
+                la imagen y selecciona
+                <strong>Guardar en Fotos</strong>.
+            </p>
+
+
+            <img
+                src="${src}"
+                id="imagen-generada"
+                alt="Nuestro momento"
+            >
+
+
+            <a
+                href="${src}"
+                download="nuestro-momento.jpg"
+                class="boton-descargar">
+
+                Descargar imagen
+
+            </a>
+
+        </div>
+
+    `;
+
+
+    document.body.appendChild(
+        overlay
+    );
+
+
+    document
+        .getElementById("cerrar-guardar")
+        .addEventListener(
+            "click",
+            function () {
+
+                overlay.remove();
 
             }
+        );
 
-            /* ==========================
-               PC / NAVEGADORES COMPATIBLES
-            ========================== */
-
-            else {
-
-                const url = URL.createObjectURL(blob);
-
-                const enlace = document.createElement("a");
-
-                enlace.href = url;
-                enlace.download = "nuestro-momento.png";
-
-                document.body.appendChild(enlace);
-
-                enlace.click();
-
-                enlace.remove();
-
-                setTimeout(function () {
-                    URL.revokeObjectURL(url);
-                }, 1000);
-            }
-
-        }, "image/png");
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert("Ha ocurrido un error al generar la imagen.");
-
-    } finally {
-
-        saveButton.style.display = "inline-block";
-
-    }
-
-});
+}
