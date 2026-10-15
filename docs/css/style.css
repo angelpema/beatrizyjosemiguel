@@ -1,6 +1,6 @@
-/* ================================
+/* =========================================================
    CONFIGURACIÓN GENERAL
-================================ */
+========================================================= */
 
 * {
     box-sizing: border-box;
@@ -13,39 +13,48 @@ html {
 }
 
 body {
-    background:
-        radial-gradient(circle at top, #fffaf4, #f7eee6);
+    background: radial-gradient(
+        circle at top,
+        #fffaf4,
+        #f7eee6
+    );
 
     color: #392d2b;
-
-    font-family:
-        "Cormorant Garamond",
-        Georgia,
-        serif;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    overflow-x: hidden;
 }
 
 body::before {
     content: "";
     position: fixed;
     inset: 0;
-
     pointer-events: none;
 
-    background-image:
-        radial-gradient(
-            rgba(120, 70, 70, 0.07) 1px,
-            transparent 1px
-        );
+    background-image: radial-gradient(
+        rgba(120, 70, 70, 0.07) 1px,
+        transparent 1px
+    );
 
     background-size: 18px 18px;
-
     opacity: 0.35;
+    z-index: -1;
 }
 
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
 
-/* ================================
-   CONTENEDOR
-================================ */
+button:focus-visible,
+a:focus-visible {
+    outline: 3px solid #a53c49;
+    outline-offset: 6px;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
 
 #pagina {
     width: 100%;
@@ -53,12 +62,13 @@ body::before {
 }
 
 
-/* ================================
+/* =========================================================
    PORTADA
-================================ */
+========================================================= */
 
 .hero {
     min-height: 100vh;
+    min-height: 100svh;
 
     display: flex;
     flex-direction: column;
@@ -66,65 +76,55 @@ body::before {
     align-items: center;
 
     padding: 40px 24px;
-
     text-align: center;
 }
 
 .nombre {
-    font-size: 52px;
+    font-size: clamp(43px, 7vw, 64px);
     font-weight: 600;
-
     letter-spacing: 2px;
-
     margin-bottom: 60px;
 }
 
 .instruccion {
     font-family: "Montserrat", sans-serif;
-
     font-size: 12px;
     text-transform: uppercase;
-
     letter-spacing: 3px;
-
     color: #8a7772;
-
     margin-bottom: 24px;
 }
 
 
-/* ================================
+/* =========================================================
    CORAZÓN
-================================ */
+========================================================= */
 
 .heart-button {
+    display: grid;
+    place-items: center;
+
     width: 105px;
     height: 105px;
+    padding: 0;
 
     border: none;
     border-radius: 50%;
-
     background: transparent;
-
     color: #a53c49;
 
+    font-family: Georgia, serif;
     font-size: 85px;
     line-height: 1;
 
     cursor: pointer;
+    touch-action: manipulation;
 
-    transition:
-        transform 0.15s ease,
-        filter 0.25s ease;
+    transition: transform 0.15s ease, filter 0.25s ease;
 
-    filter:
-        drop-shadow(
-            0 10px 20px rgba(165, 60, 73, 0.18)
-        );
-}
-
-.heart-button:hover {
-    transform: scale(1.08);
+    filter: drop-shadow(
+        0 10px 20px rgba(165, 60, 73, 0.18)
+    );
 }
 
 .heart-button:active {
@@ -136,7 +136,6 @@ body::before {
 }
 
 @keyframes latido {
-
     0% {
         transform: scale(1);
     }
@@ -152,35 +151,31 @@ body::before {
     100% {
         transform: scale(1);
     }
-
 }
 
 
-/* ================================
-   PROGRESO
-================================ */
+/* =========================================================
+   BARRA DE PROGRESO
+========================================================= */
 
 .progress-container {
     width: min(300px, 80%);
-
     margin-top: 35px;
 
     font-family: "Montserrat", sans-serif;
-
     font-size: 12px;
-
     color: #8b7773;
 }
 
 .progress-bar {
     width: 100%;
-    height: 3px;
-
-    background: #ded1cb;
-
-    overflow: hidden;
+    height: 4px;
 
     margin-bottom: 12px;
+
+    background: #ded1cb;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 .progress {
@@ -188,195 +183,206 @@ body::before {
     height: 100%;
 
     background: #a53c49;
+    border-radius: inherit;
 
     transition: width 0.3s ease;
 }
 
 
-/* ================================
+/* =========================================================
    CONTENIDO BLOQUEADO
-================================ */
+========================================================= */
 
 .contenido {
-    transition:
-        opacity 1s ease,
-        transform 1s ease;
+    transition: opacity 1s ease, transform 1s ease;
 }
 
 .bloqueado {
     opacity: 0;
     height: 0;
     overflow: hidden;
-
+    visibility: hidden;
+    pointer-events: none;
     transform: translateY(30px);
 }
 
 .desbloqueado {
     opacity: 1;
     height: auto;
-
+    visibility: visible;
+    pointer-events: auto;
     transform: translateY(0);
 }
 
 
-/* ================================
-   TÍTULO
-================================ */
+/* =========================================================
+   INTRODUCCIÓN
+========================================================= */
 
 .titulo-principal {
-    min-height: 65vh;
-
     display: flex;
     flex-direction: column;
-
-    justify-content: center;
     align-items: center;
 
+    padding: 100px 24px 90px;
     text-align: center;
-
-    padding: 80px 25px;
-}
-
-.subtitulo {
-    font-family: "Montserrat", sans-serif;
-
-    text-transform: uppercase;
-
-    letter-spacing: 4px;
-
-    color: #967d77;
-
-    font-size: 11px;
-
-    margin-bottom: 25px;
 }
 
 .titulo-principal h1 {
-    max-width: 700px;
+    max-width: 800px;
+    margin-bottom: 40px;
 
     font-size: clamp(45px, 8vw, 85px);
-
-    line-height: 0.95;
-
+    line-height: 1.05;
     font-weight: 500;
 }
 
+.subtitulo {
+    width: 100%;
+    max-width: 760px;
 
-/* ================================
-   GALERÍA
-================================ */
+    font-family: "Montserrat", sans-serif;
+    font-size: clamp(14px, 1.5vw, 16px);
+    font-weight: 400;
+    line-height: 1.95;
+
+    color: #806b65;
+    overflow-wrap: break-word;
+}
+
+.subtitulo p + p {
+    margin-top: 24px;
+}
+
+.subtitulo .frase-especial {
+    margin-top: 32px;
+
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600;
+    line-height: 1.25;
+
+    color: #a53c49;
+}
+
+
+/* =========================================================
+   GALERÍA PRINCIPAL
+   Altura automática para todas las fotografías
+========================================================= */
 
 .galeria {
-    width: min(900px, 90%);
-
-    min-height: 680px;
-
+    width: min(1100px, 88%);
     margin: 0 auto;
+    padding: 30px 0 45px;
 
-    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 55px 36px;
+
+    align-items: start;
 }
 
 .foto {
-    position: absolute;
+    --giro: -3deg;
 
-    background: white;
+    position: relative;
+    min-width: 0;
 
     padding: 10px 10px 35px;
 
-    box-shadow:
-        0 20px 45px rgba(50, 30, 30, 0.18);
+    background: #fff;
+    border-radius: 3px;
 
-    transition:
-        transform 0.5s ease,
-        z-index 0s;
+    box-shadow: 0 15px 35px rgba(50, 30, 30, 0.15);
+
+    transform: rotate(var(--giro));
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.foto:nth-child(6n + 1) {
+    --giro: -4deg;
+}
+
+.foto:nth-child(6n + 2) {
+    --giro: 3deg;
+}
+
+.foto:nth-child(6n + 3) {
+    --giro: -2deg;
+}
+
+.foto:nth-child(6n + 4) {
+    --giro: 3deg;
+}
+
+.foto:nth-child(6n + 5) {
+    --giro: -3deg;
+}
+
+.foto:nth-child(6n + 6) {
+    --giro: 4deg;
 }
 
 .foto img {
-    display: block;
-
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
 
-    object-fit: cover;
-}
+    /* Muestra la imagen completa sin recortar */
+    object-fit: contain;
+    object-position: center;
 
-.foto-1 {
-    width: 43%;
-
-    left: 2%;
-    top: 50px;
-
-    transform: rotate(-7deg);
-}
-
-.foto-2 {
-    width: 43%;
-
-    right: 3%;
-    top: 0;
-
-    transform: rotate(7deg);
-}
-
-.foto-3 {
-    width: 45%;
-
-    left: 28%;
-    top: 280px;
-
-    transform: rotate(-1deg);
-}
-
-.foto:hover {
-    z-index: 20;
-
-    transform:
-        rotate(0deg)
-        scale(1.05);
+    background: #faf7f3;
+    user-select: none;
 }
 
 
-/* ================================
-   SEPARADOR
-================================ */
+/* =========================================================
+   SEPARADORES
+========================================================= */
 
 .separador {
-    padding: 130px 20px;
-
+    padding: 100px 24px;
     text-align: center;
 }
 
 .separador p {
+    max-width: 720px;
+    margin: 0 auto;
+
     font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    line-height: 1.9;
 
-    letter-spacing: 3px;
-
+    letter-spacing: 2px;
     text-transform: uppercase;
-
-    font-size: 11px;
 
     color: #927a74;
 }
 
+.separador-regalo {
+    padding-top: 0;
+    padding-bottom: 65px;
+}
+
 .emojis {
-    margin-top: 35px;
-
-    font-size: 35px;
-
-    letter-spacing: 10px;
+    margin-top: 25px;
+    font-size: clamp(28px, 6vw, 38px);
+    letter-spacing: 3px;
+    color: #a53c49;
+    overflow-wrap: anywhere;
 }
 
 
-/* ================================
+/* =========================================================
    CARTA
-================================ */
+========================================================= */
 
 .carta {
     width: min(650px, 85%);
-
-    margin: auto;
-
-    padding: 40px 0 130px;
+    margin: 0 auto;
+    padding: 30px 0 110px;
 
     text-align: center;
 }
@@ -385,163 +391,193 @@ body::before {
     margin-bottom: 35px;
 
     font-size: clamp(28px, 5vw, 43px);
-
-    line-height: 1.25;
-
+    line-height: 1.3;
     font-weight: 400;
+}
+
+.carta p:last-child {
+    margin-bottom: 0;
 }
 
 .carta .destacado {
     color: #a33e4a;
-
-    font-size: clamp(40px, 7vw, 65px);
-
+    font-size: clamp(38px, 7vw, 65px);
     font-style: italic;
 }
 
 
-/* ================================
+/* =========================================================
    CELEBRACIÓN
-================================ */
+========================================================= */
 
 .celebracion {
-    padding: 110px 20px;
-
+    padding: 100px 24px;
     text-align: center;
 
     background: #3d2f2d;
-
     color: #fff9f3;
+}
+
+.celebracion h2 {
+    max-width: 850px;
+    margin: 0 auto;
+
+    font-size: clamp(42px, 7vw, 80px);
+    line-height: 1.1;
+    font-weight: 400;
 }
 
 .copas {
     font-size: 38px;
-
     margin-bottom: 20px;
 }
 
 .estrellas {
     font-size: 22px;
-
     letter-spacing: 10px;
-
     margin-bottom: 60px;
 }
 
-.celebracion h2 {
-    max-width: 700px;
 
-    margin: auto;
-
-    font-size: clamp(50px, 8vw, 90px);
-
-    line-height: 0.95;
-
-    font-weight: 400;
-}
-
-
-/* ================================
-   FOTO FINAL
-================================ */
+/* =========================================================
+   LAS TRES FOTOS FINALES
+========================================================= */
 
 .foto-final {
-    padding: 140px 20px;
+    padding: 115px 0 100px;
+}
 
-    display: flex;
-    justify-content: center;
+.galeria-final {
+    width: min(1150px, 88%);
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: 34px;
 }
 
 .marco-final {
-    width: min(600px, 90%);
+    position: relative;
+    min-width: 0;
 
-    background: white;
+    background: #fff;
+    padding: 12px 12px 40px;
+    border-radius: 3px;
 
-    padding: 13px 13px 45px;
+    box-shadow: 0 20px 45px rgba(50, 30, 30, 0.18);
 
-    box-shadow:
-        0 25px 60px rgba(50, 30, 30, 0.2);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
 
-    transform: rotate(-2deg);
+.marco-final:nth-child(1) {
+    transform: rotate(-4deg);
+}
+
+.marco-final:nth-child(2) {
+    transform: translateY(-18px) rotate(2deg);
+}
+
+.marco-final:nth-child(3) {
+    transform: rotate(-3deg);
 }
 
 .marco-final img {
     width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
 
-    display: block;
+    object-fit: contain;
+    object-position: center;
 
-    aspect-ratio: 1 / 1;
-
-    object-fit: cover;
+    background: #faf7f3;
+    user-select: none;
 }
 
 
-/* ================================
+/* =========================================================
+   EFECTOS SOLO EN DISPOSITIVOS CON RATÓN
+========================================================= */
+
+@media (hover: hover) and (pointer: fine) {
+    .heart-button:hover {
+        transform: scale(1.08);
+    }
+
+    .foto:hover,
+    .marco-final:hover {
+        z-index: 10;
+
+        transform: rotate(0deg) scale(1.04);
+
+        box-shadow: 0 25px 55px rgba(50, 30, 30, 0.23);
+    }
+
+    .save-button:hover {
+        background: #3d2f2d;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+}
+
+
+/* =========================================================
    DESPEDIDA
-================================ */
+========================================================= */
 
 .despedida {
-    padding: 60px 20px 140px;
-
+    padding: 40px 24px 90px;
     text-align: center;
 }
 
 .despedida h2 {
-    font-size: clamp(42px, 7vw, 72px);
-
-    line-height: 1;
-
+    font-size: clamp(40px, 7vw, 72px);
+    line-height: 1.1;
     font-weight: 400;
-
-    margin-bottom: 70px;
 }
+
+.despedida .save-button {
+    margin-top: 45px;
+}
+
+
+/* =========================================================
+   BOTÓN GUARDAR
+========================================================= */
 
 .save-button {
     border: 1px solid #8c6d68;
-
     background: transparent;
-
     color: #493835;
 
     padding: 18px 32px;
-
     border-radius: 50px;
 
     font-family: "Montserrat", sans-serif;
-
     font-size: 12px;
-
     letter-spacing: 1px;
 
     cursor: pointer;
 
-    transition: 0.3s ease;
-}
-
-.save-button:hover {
-    background: #3d2f2d;
-
-    color: white;
-
-    transform: translateY(-3px);
+    transition:
+        background 0.3s ease,
+        color 0.3s ease,
+        transform 0.3s ease;
 }
 
 
-/* ================================
+/* =========================================================
    FOOTER
-================================ */
+========================================================= */
 
 footer {
-    padding: 60px 20px;
+    padding: 45px 20px;
 
     text-align: center;
 
     font-family: "Montserrat", sans-serif;
-
     font-size: 11px;
-
     letter-spacing: 2px;
-
     text-transform: uppercase;
 
     color: #917c77;
@@ -549,65 +585,262 @@ footer {
 
 footer span {
     display: block;
-
     margin-top: 15px;
 
     color: #a53c49;
-
     font-size: 20px;
 }
 
 
-/* ================================
-   MÓVIL
-================================ */
+/* =========================================================
+   OVERLAY GUARDAR IMAGEN
+========================================================= */
 
-@media (max-width: 600px) {
+#guardar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
 
-    .nombre {
-        font-size: 45px;
+    background: rgba(0, 0, 0, 0.94);
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 65px 15px 30px;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.guardar-contenido {
+    position: relative;
+    width: min(600px, 100%);
+    margin: 0 auto;
+
+    text-align: center;
+    color: #fff;
+}
+
+.guardar-contenido h2 {
+    margin: 30px 0 15px;
+    font-size: 30px;
+}
+
+.guardar-contenido p {
+    margin-bottom: 25px;
+
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+#imagen-generada {
+    width: 100%;
+    height: auto;
+    margin: 0 auto 30px;
+    border-radius: 8px;
+}
+
+.cerrar-guardar {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #fff;
+    color: #000;
+
+    font-size: 32px;
+    cursor: pointer;
+
+    z-index: 1000000;
+}
+
+.boton-descargar {
+    display: inline-block;
+    margin-bottom: 50px;
+    padding: 16px 30px;
+
+    border-radius: 40px;
+    background: #fff;
+    color: #000;
+
+    text-decoration: none;
+
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+    .galeria {
+        width: 86%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 48px 32px;
     }
 
+    /* Centrar la última foto cuando queda una fila incompleta */
+    .galeria > .foto:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+        width: calc((100% - 32px) / 2);
+        justify-self: center;
+    }
+
+    .galeria-final {
+        width: min(600px, 82%);
+        grid-template-columns: 1fr;
+        gap: 60px;
+    }
+
+    .marco-final {
+        width: 85%;
+    }
+
+    .marco-final:nth-child(1) {
+        justify-self: start;
+        transform: rotate(-4deg);
+    }
+
+    .marco-final:nth-child(2) {
+        justify-self: end;
+        transform: rotate(3deg);
+    }
+
+    .marco-final:nth-child(3) {
+        justify-self: center;
+        transform: rotate(-2deg);
+    }
+}
+
+
+/* =========================================================
+   MÓVIL
+========================================================= */
+
+@media (max-width: 600px) {
     .hero {
-        min-height: 100svh;
+        padding: 30px 20px;
+    }
+
+    .nombre {
+        margin-bottom: 50px;
+    }
+
+    .heart-button {
+        width: 95px;
+        height: 95px;
+        font-size: 75px;
+    }
+
+    .titulo-principal {
+        padding: 65px 24px 55px;
+    }
+
+    .titulo-principal h1 {
+        margin-bottom: 30px;
+    }
+
+    .subtitulo {
+        font-size: 14px;
+        line-height: 1.85;
+    }
+
+    .subtitulo p + p {
+        margin-top: 20px;
     }
 
     .galeria {
-        min-height: 510px;
+        width: min(360px, 80%);
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding: 20px 0 35px;
     }
 
     .foto {
-        padding: 7px 7px 25px;
+        padding: 9px 9px 30px;
     }
 
-    .foto-1 {
-        width: 55%;
-        left: -2%;
-        top: 40px;
-    }
-
-    .foto-2 {
-        width: 55%;
-        right: -3%;
-        top: 20px;
-    }
-
-    .foto-3 {
-        width: 58%;
-        left: 21%;
-        top: 235px;
+    .galeria > .foto:last-child:nth-child(odd) {
+        grid-column: auto;
+        width: 100%;
     }
 
     .separador {
-        padding:
-            90px
-            20px;
+        padding: 75px 24px;
+    }
+
+    .separador p {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+    }
+
+    .separador-regalo {
+        padding-top: 0;
+        padding-bottom: 45px;
+    }
+
+    .carta {
+        width: 86%;
+        padding: 20px 0 80px;
+    }
+
+    .carta p {
+        margin-bottom: 28px;
     }
 
     .celebracion {
-        padding:
-            90px
-            20px;
+        padding: 75px 24px;
     }
 
+    .foto-final {
+        padding: 80px 0 70px;
+    }
+
+    .galeria-final {
+        width: min(370px, 80%);
+        gap: 45px;
+    }
+
+    .marco-final {
+        width: 100%;
+        padding: 10px 10px 35px;
+    }
+
+    .despedida {
+        padding: 30px 20px 65px;
+    }
+
+    .save-button {
+        width: min(320px, 90%);
+        padding: 17px 20px;
+    }
+
+    footer {
+        padding: 35px 20px;
+    }
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD: MOVIMIENTO REDUCIDO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
 }
