@@ -2,133 +2,77 @@
    ELEMENTOS
 ========================================================= */
 
-const heartButton =
-    document.getElementById("heartButton");
-
-const percentage =
-    document.getElementById("percentage");
-
-const progress =
-    document.getElementById("progress");
-
-const contenido =
-    document.getElementById("contenido");
-
-const saveButton =
-    document.getElementById("saveButton");
+const heartButton = document.getElementById("heartButton");
+const percentage = document.getElementById("percentage");
+const progress = document.getElementById("progress");
+const contenido = document.getElementById("contenido");
+const saveButton = document.getElementById("saveButton");
 
 
 /* =========================================================
-   VARIABLES CORAZÓN
+   VARIABLES
 ========================================================= */
 
 let valor = 0;
 let desbloqueado = false;
 
-
-/* =========================================================
-   AUDIO - WEB AUDIO API
-========================================================= */
-
 let audioContext = null;
 let audioBuffer = null;
-let audioCargando = false;
-let audioPreparado = false;
+let promesaAudio = null;
 let fuenteAudio = null;
+let volumenAudio = null;
 
 
 /* =========================================================
-   PREPARAR AUDIO PARA IPHONE
+   PREPARAR AUDIO
 ========================================================= */
 
-async function prepararAudio() {
+function prepararAudio() {
 
-    if (audioPreparado || audioCargando) {
-        return;
+    if (promesaAudio) {
+        return promesaAudio;
     }
 
-    audioCargando = true;
+    promesaAudio = (async function () {
 
-    try {
+        const ContextoAudio =
+            window.AudioContext || window.webkitAudioContext;
 
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-
-        /* Crear contexto */
+        if (!ContextoAudio) {
+            throw new Error("Este navegador no admite Web Audio.");
+        }
 
         if (!audioContext) {
-
-            audioContext =
-                new AudioContext();
-
+            audioContext = new ContextoAudio();
         }
-
-
-        /* IMPORTANTE PARA IPHONE */
 
         if (audioContext.state === "suspended") {
-
             await audioContext.resume();
-
         }
 
+        if (!audioBuffer) {
 
-        console.log(
-            "AudioContext:",
-            audioContext.state
-        );
-
-
-        /* Descargar canción */
-
-        const respuesta =
-            await fetch(
+            const respuesta = await fetch(
                 "static/songs/cancion2.m4a"
             );
 
+            if (!respuesta.ok) {
+                throw new Error("No se pudo cargar la canción.");
+            }
 
-        if (!respuesta.ok) {
+            const datos = await respuesta.arrayBuffer();
 
-            throw new Error(
-                "No se pudo cargar la canción"
-            );
-
+            audioBuffer = await audioContext.decodeAudioData(datos);
         }
 
+    })().catch(function (error) {
 
-        const arrayBuffer =
-            await respuesta.arrayBuffer();
+        promesaAudio = null;
+        throw error;
 
+    });
 
-        /* Decodificar canción */
-
-        audioBuffer =
-            await audioContext.decodeAudioData(
-                arrayBuffer
-            );
-
-
-        audioPreparado = true;
-
-
-        console.log(
-            "Canción preparada correctamente"
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "ERROR preparando audio:",
-            error
-        );
-
-    }
-
-    audioCargando = false;
-
+    return promesaAudio;
 }
 
 
@@ -140,140 +84,36 @@ async function reproducirCancion() {
 
     try {
 
-        if (!audioContext) {
-
-            console.log(
-                "No existe AudioContext"
-            );
-
-            return;
-
-        }
-
+        await prepararAudio();
 
         if (audioContext.state === "suspended") {
-
             await audioContext.resume();
-
         }
-
-
-        /* Si todavía está cargando */
-
-        if (!audioBuffer) {
-
-            console.log(
-                "Esperando a que cargue la canción..."
-            );
-
-
-            let intentos = 0;
-
-
-            while (
-                !audioBuffer &&
-                intentos < 100
-            ) {
-
-                await new Promise(
-                    function (resolve) {
-
-                        setTimeout(
-                            resolve,
-                            100
-                        );
-
-                    }
-                );
-
-
-                intentos++;
-
-            }
-
-        }
-
-
-        if (!audioBuffer) {
-
-            console.log(
-                "No se pudo cargar la canción"
-            );
-
-            return;
-
-        }
-
-
-        /* Parar canción anterior */
 
         if (fuenteAudio) {
-
-            try {
-
-                fuenteAudio.stop();
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
-
+            fuenteAudio.stop();
+            fuenteAudio.disconnect();
         }
 
+        if (volumenAudio) {
+            volumenAudio.disconnect();
+        }
 
-        /* Crear fuente */
+        fuenteAudio = audioContext.createBufferSource();
+        fuenteAudio.buffer = audioBuffer;
+        fuenteAudio.loop = true;
 
-        fuenteAudio =
-            audioContext.createBufferSource();
+        volumenAudio = audioContext.createGain();
+        volumenAudio.gain.value = 0.8;
 
-
-        fuenteAudio.buffer =
-            audioBuffer;
-
-
-        /* Repetir canción */
-
-        fuenteAudio.loop =
-            true;
-
-
-        /* Control de volumen */
-
-        const gainNode =
-            audioContext.createGain();
-
-
-        gainNode.gain.value =
-            0.8;
-
-
-        fuenteAudio.connect(
-            gainNode
-        );
-
-
-        gainNode.connect(
-            audioContext.destination
-        );
-
-
-        /* EMPEZAR */
+        fuenteAudio.connect(volumenAudio);
+        volumenAudio.connect(audioContext.destination);
 
         fuenteAudio.start(0);
 
-
-        console.log(
-            "🎵 CANCIÓN REPRODUCIÉNDOSE"
-        );
-
-
     } catch (error) {
 
-        console.error(
-            "ERROR reproduciendo canción:",
-            error
-        );
+        console.error("Error reproduciendo canción:", error);
 
     }
 
@@ -284,140 +124,42 @@ async function reproducirCancion() {
    CORAZÓN
 ========================================================= */
 
-heartButton.addEventListener(
-    "click",
-    async function () {
+heartButton.addEventListener("click", function () {
 
-
-        /* =================================================
-           PRIMER TOQUE:
-           DESBLOQUEAR AUDIO EN IPHONE
-        ================================================= */
-
-        if (!audioContext) {
-
-            const AudioContext =
-                window.AudioContext ||
-                window.webkitAudioContext;
-
-
-            audioContext =
-                new AudioContext();
-
-
-            try {
-
-                await audioContext.resume();
-
-
-                console.log(
-                    "Audio desbloqueado:",
-                    audioContext.state
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error desbloqueando audio:",
-                    error
-                );
-
-            }
-
-
-            /* Cargar canción */
-
-            prepararAudio();
-
-        }
-
-
-        /* =================================================
-           CORAZÓN
-        ================================================= */
-
-        if (desbloqueado) {
-            return;
-        }
-
-
-        valor += 10;
-
-
-        if (valor > 100) {
-
-            valor = 100;
-
-        }
-
-
-        percentage.textContent =
-            valor + "%";
-
-
-        progress.style.width =
-            valor + "%";
-
-
-        /* =================================================
-           ANIMACIÓN
-        ================================================= */
-
-        heartButton
-            .classList
-            .remove("latido");
-
-
-        void heartButton.offsetWidth;
-
-
-        heartButton
-            .classList
-            .add("latido");
-
-
-        /* =================================================
-           VIBRACIÓN
-        ================================================= */
-
-        if (navigator.vibrate) {
-
-            navigator.vibrate(30);
-
-        }
-
-
-        /* =================================================
-           100 %
-        ================================================= */
-
-        if (valor === 100) {
-
-            desbloqueado = true;
-
-
-            console.log(
-                "100% alcanzado"
-            );
-
-
-            /* REPRODUCIR MÚSICA */
-
-            reproducirCancion();
-
-
-            /* ABRIR REGALO */
-
-            setTimeout(
-                abrirRegalo,
-                700
-            );
-
-        }
-
+    if (desbloqueado) {
+        return;
     }
-);
+
+    /* Preparar el audio desde el toque del usuario */
+    prepararAudio().catch(function (error) {
+        console.error("Error preparando audio:", error);
+    });
+
+    valor = Math.min(valor + 10, 100);
+
+    percentage.textContent = valor + "%";
+    progress.style.width = valor + "%";
+
+    heartButton.classList.remove("latido");
+
+    void heartButton.offsetWidth;
+
+    heartButton.classList.add("latido");
+
+    if (navigator.vibrate) {
+        navigator.vibrate(30);
+    }
+
+    if (valor === 100) {
+
+        desbloqueado = true;
+
+        reproducirCancion();
+
+        setTimeout(abrirRegalo, 700);
+    }
+
+});
 
 
 /* =========================================================
@@ -426,33 +168,131 @@ heartButton.addEventListener(
 
 function abrirRegalo() {
 
-    contenido
-        .classList
-        .remove(
-            "bloqueado"
-        );
+    contenido.classList.remove("bloqueado");
+    contenido.classList.add("desbloqueado");
 
+    setTimeout(function () {
 
-    contenido
-        .classList
-        .add(
-            "desbloqueado"
-        );
+        const reducirMovimiento = window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches;
 
+        contenido.scrollIntoView({
+            behavior: reducirMovimiento ? "instant" : "smooth",
+            block: "start"
+        });
 
-    setTimeout(
-        function () {
-
-            contenido.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-
-        },
-        300
-    );
+    }, 300);
 
 }
+
+
+/* =========================================================
+   FOTOS EN GRANDE
+========================================================= */
+
+(function configurarVisorFotos() {
+
+    const fotos = document.querySelectorAll(
+        ".galeria .foto, .foto-final .marco-final"
+    );
+
+    const visor = document.createElement("dialog");
+
+    visor.className = "visor-fotos";
+    visor.setAttribute("aria-label", "Fotografía ampliada");
+
+    const cerrar = document.createElement("button");
+
+    cerrar.type = "button";
+    cerrar.className = "visor-cerrar";
+    cerrar.textContent = "×";
+    cerrar.setAttribute("aria-label", "Cerrar fotografía");
+
+    const imagenGrande = document.createElement("img");
+
+    visor.append(cerrar, imagenGrande);
+    document.body.appendChild(visor);
+
+    let fotoAnterior = null;
+    let overflowAnterior = "";
+
+    function abrirFoto(contenedor) {
+
+        const imagen = contenedor.querySelector("img");
+
+        if (!imagen || visor.open) {
+            return;
+        }
+
+        fotoAnterior = contenedor;
+
+        imagenGrande.src = imagen.currentSrc || imagen.src;
+        imagenGrande.alt = imagen.alt || "Fotografía ampliada";
+
+        overflowAnterior = document.body.style.overflow;
+
+        visor.showModal();
+        document.body.style.overflow = "hidden";
+
+        cerrar.focus();
+    }
+
+    fotos.forEach(function (foto) {
+
+        const imagen = foto.querySelector("img");
+
+        foto.tabIndex = 0;
+        foto.setAttribute("role", "button");
+        foto.setAttribute("aria-haspopup", "dialog");
+
+        foto.setAttribute(
+            "aria-label",
+            "Ampliar: " + (imagen?.alt || "fotografía")
+        );
+
+        foto.addEventListener("click", function () {
+            abrirFoto(foto);
+        });
+
+        foto.addEventListener("keydown", function (evento) {
+
+            if (evento.key === "Enter" || evento.key === " ") {
+                evento.preventDefault();
+                abrirFoto(foto);
+            }
+
+        });
+
+    });
+
+    cerrar.addEventListener("click", function () {
+        visor.close();
+    });
+
+    /* Cerrar al pulsar fuera de la imagen */
+    visor.addEventListener("click", function (evento) {
+
+        if (evento.target === visor) {
+            visor.close();
+        }
+
+    });
+
+    /* Escape también cierra el diálogo */
+    visor.addEventListener("close", function () {
+
+        document.body.style.overflow = overflowAnterior;
+
+        if (fotoAnterior) {
+            fotoAnterior.focus({ preventScroll: true });
+        }
+
+        imagenGrande.removeAttribute("src");
+
+    });
+
+})();
 
 
 /* =========================================================
@@ -461,96 +301,72 @@ function abrirRegalo() {
 
 if (saveButton) {
 
-    saveButton.addEventListener(
-        "click",
-        async function () {
+    saveButton.addEventListener("click", async function () {
 
-            const pagina =
-                document.getElementById(
-                    "pagina"
-                );
+        const pagina = document.getElementById("pagina");
+        const displayAnterior = saveButton.style.display;
 
+        saveButton.disabled = true;
+        saveButton.style.display = "none";
 
-            saveButton.style.display =
-                "none";
+        try {
 
+            const canvas = await html2canvas(pagina, {
+                scale: 1.5,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: "#f7eee6",
+                logging: false
+            });
 
-            try {
+            const imagen = canvas.toDataURL("image/jpeg", 0.92);
 
-                const canvas =
-                    await html2canvas(
-                        pagina,
-                        {
-                            scale: 1.5,
-                            useCORS: true,
-                            allowTaint: false,
-                            backgroundColor:
-                                "#f7eee6",
-                            logging: false
-                        }
-                    );
+            mostrarImagenParaGuardar(imagen);
 
+        } catch (error) {
 
-                const imagen =
-                    canvas.toDataURL(
-                        "image/jpeg",
-                        0.92
-                    );
+            console.error("Error generando imagen:", error);
 
+            alert("No se ha podido generar la imagen.");
 
-                mostrarImagenParaGuardar(
-                    imagen
-                );
+        } finally {
 
-
-            } catch (error) {
-
-                console.error(
-                    "Error generando imagen:",
-                    error
-                );
-
-
-                alert(
-                    "No se ha podido generar la imagen."
-                );
-
-            }
-
-
-            saveButton.style.display =
-                "inline-block";
+            saveButton.style.display = displayAnterior;
+            saveButton.disabled = false;
 
         }
-    );
+
+    });
 
 }
 
 
 /* =========================================================
-   MOSTRAR IMAGEN
+   MOSTRAR IMAGEN PARA GUARDAR
 ========================================================= */
 
 function mostrarImagenParaGuardar(src) {
 
-    const overlay =
-        document.createElement(
-            "div"
-        );
+    const overlayAnterior = document.getElementById(
+        "guardar-overlay"
+    );
 
+    if (overlayAnterior) {
+        overlayAnterior.remove();
+    }
 
-    overlay.id =
-        "guardar-overlay";
+    const overlay = document.createElement("div");
 
+    overlay.id = "guardar-overlay";
 
     overlay.innerHTML = `
-
         <div class="guardar-contenido">
 
             <button
                 id="cerrar-guardar"
                 class="cerrar-guardar"
-                type="button">
+                type="button"
+                aria-label="Cerrar imagen">
                 ×
             </button>
 
@@ -559,48 +375,34 @@ function mostrarImagenParaGuardar(src) {
             </h2>
 
             <p>
-                En iPhone mantén pulsada
-                la imagen y selecciona
-                <strong>
-                    Guardar en Fotos
-                </strong>.
+                En iPhone mantén pulsada la imagen y selecciona
+                <strong>Guardar en Fotos</strong>.
             </p>
 
             <img
-                src="${src}"
                 id="imagen-generada"
                 alt="Nuestro momento"
             >
 
             <a
-                href="${src}"
                 download="nuestro-momento.jpg"
                 class="boton-descargar">
-
                 Descargar imagen
-
             </a>
 
         </div>
     `;
 
+    overlay.querySelector("#imagen-generada").src = src;
+    overlay.querySelector(".boton-descargar").href = src;
 
-    document.body.appendChild(
-        overlay
+    document.body.appendChild(overlay);
+
+    overlay.querySelector("#cerrar-guardar").addEventListener(
+        "click",
+        function () {
+            overlay.remove();
+        }
     );
-
-
-    document
-        .getElementById(
-            "cerrar-guardar"
-        )
-        .addEventListener(
-            "click",
-            function () {
-
-                overlay.remove();
-
-            }
-        );
 
 }
