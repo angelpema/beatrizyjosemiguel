@@ -8,116 +8,100 @@ const progress = document.getElementById("progress");
 const contenido = document.getElementById("contenido");
 const saveButton = document.getElementById("saveButton");
 
-
-/* =========================================================
-   VARIABLES
-========================================================= */
-
 let valor = 0;
 let desbloqueado = false;
 
-let audioContext = null;
-let audioBuffer = null;
-let promesaAudio = null;
-let fuenteAudio = null;
-let volumenAudio = null;
-
 
 /* =========================================================
-   PREPARAR AUDIO
+   CANCIÓN
 ========================================================= */
 
-function prepararAudio() {
+const cancion = document.createElement("audio");
 
-    if (promesaAudio) {
-        return promesaAudio;
-    }
+cancion.src = "static/songs/cancion2.m4a";
+cancion.preload = "auto";
+cancion.loop = true;
+cancion.volume = 0.8;
+cancion.controls = true;
 
-    promesaAudio = (async function () {
+cancion.setAttribute("aria-label", "Nuestra canción");
 
-        const ContextoAudio =
-            window.AudioContext || window.webkitAudioContext;
+cancion.style.display = "block";
+cancion.style.width = "100%";
 
-        if (!ContextoAudio) {
-            throw new Error("Este navegador no admite Web Audio.");
-        }
+/* Solo aparece si no se consigue reproducir la canción */
+const panelAudio = document.createElement("div");
 
-        if (!audioContext) {
-            audioContext = new ContextoAudio();
-        }
+panelAudio.hidden = true;
+panelAudio.style.maxWidth = "360px";
+panelAudio.style.margin = "25px auto";
+panelAudio.style.padding = "0 20px";
+panelAudio.style.textAlign = "center";
 
-        if (audioContext.state === "suspended") {
-            await audioContext.resume();
-        }
+const mensajeAudio = document.createElement("p");
 
-        if (!audioBuffer) {
+mensajeAudio.setAttribute("role", "status");
+mensajeAudio.style.marginBottom = "12px";
+mensajeAudio.style.fontSize = "18px";
 
-            const respuesta = await fetch(
-                "static/songs/cancion2.m4a"
-            );
+panelAudio.append(mensajeAudio, cancion);
+contenido.prepend(panelAudio);
 
-            if (!respuesta.ok) {
-                throw new Error("No se pudo cargar la canción.");
-            }
+function mostrarErrorAudio(error) {
 
-            const datos = await respuesta.arrayBuffer();
+    console.error("Error de audio:", error, cancion.error);
 
-            audioBuffer = await audioContext.decodeAudioData(datos);
-        }
+    panelAudio.hidden = false;
 
-    })().catch(function (error) {
+    const codigo = cancion.error?.code;
 
-        promesaAudio = null;
-        throw error;
+    if (codigo === 2) {
 
-    });
+        mensajeAudio.textContent =
+            "No se ha podido descargar la canción. Comprueba la conexión y vuelve a intentarlo.";
 
-    return promesaAudio;
-}
+    } else if (codigo === 3 || codigo === 4) {
 
+        mensajeAudio.textContent =
+            "No se ha podido abrir la canción. Comprueba que static/songs/cancion2.m4a existe y que el archivo se puede reproducir.";
 
-/* =========================================================
-   REPRODUCIR CANCIÓN
-========================================================= */
+    } else {
 
-async function reproducirCancion() {
-
-    try {
-
-        await prepararAudio();
-
-        if (audioContext.state === "suspended") {
-            await audioContext.resume();
-        }
-
-        if (fuenteAudio) {
-            fuenteAudio.stop();
-            fuenteAudio.disconnect();
-        }
-
-        if (volumenAudio) {
-            volumenAudio.disconnect();
-        }
-
-        fuenteAudio = audioContext.createBufferSource();
-        fuenteAudio.buffer = audioBuffer;
-        fuenteAudio.loop = true;
-
-        volumenAudio = audioContext.createGain();
-        volumenAudio.gain.value = 0.8;
-
-        fuenteAudio.connect(volumenAudio);
-        volumenAudio.connect(audioContext.destination);
-
-        fuenteAudio.start(0);
-
-    } catch (error) {
-
-        console.error("Error reproduciendo canción:", error);
+        mensajeAudio.textContent =
+            "Pulsa ▶ para escuchar nuestra canción.";
 
     }
 
 }
+
+function reproducirCancion() {
+
+    /*
+       play() se ejecuta directamente dentro del clic,
+       sin esperar a descargar ni decodificar el archivo.
+    */
+
+    cancion.muted = false;
+
+    const reproduccion = cancion.play();
+
+    if (reproduccion) {
+        reproduccion.catch(mostrarErrorAudio);
+    }
+
+}
+
+cancion.addEventListener("playing", function () {
+    panelAudio.hidden = true;
+});
+
+cancion.addEventListener("error", function () {
+
+    if (desbloqueado) {
+        mostrarErrorAudio(cancion.error);
+    }
+
+});
 
 
 /* =========================================================
@@ -126,14 +110,15 @@ async function reproducirCancion() {
 
 heartButton.addEventListener("click", function () {
 
+    /* Permite volver a intentar el audio tocando el corazón */
     if (desbloqueado) {
+
+        if (cancion.paused) {
+            reproducirCancion();
+        }
+
         return;
     }
-
-    /* Preparar el audio desde el toque del usuario */
-    prepararAudio().catch(function (error) {
-        console.error("Error preparando audio:", error);
-    });
 
     valor = Math.min(valor + 10, 100);
 
@@ -154,9 +139,11 @@ heartButton.addEventListener("click", function () {
 
         desbloqueado = true;
 
+        /* Iniciar la música dentro del propio toque */
         reproducirCancion();
 
         setTimeout(abrirRegalo, 700);
+
     }
 
 });
@@ -236,6 +223,7 @@ function abrirRegalo() {
         document.body.style.overflow = "hidden";
 
         cerrar.focus();
+
     }
 
     fotos.forEach(function (foto) {
@@ -258,8 +246,10 @@ function abrirRegalo() {
         foto.addEventListener("keydown", function (evento) {
 
             if (evento.key === "Enter" || evento.key === " ") {
+
                 evento.preventDefault();
                 abrirFoto(foto);
+
             }
 
         });
@@ -270,7 +260,6 @@ function abrirRegalo() {
         visor.close();
     });
 
-    /* Cerrar al pulsar fuera de la imagen */
     visor.addEventListener("click", function (evento) {
 
         if (evento.target === visor) {
@@ -279,7 +268,6 @@ function abrirRegalo() {
 
     });
 
-    /* Escape también cierra el diálogo */
     visor.addEventListener("close", function () {
 
         document.body.style.overflow = overflowAnterior;
