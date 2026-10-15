@@ -13,12 +13,7 @@ html {
 }
 
 body {
-    background: radial-gradient(
-        circle at top,
-        #fffaf4,
-        #f7eee6
-    );
-
+    background: radial-gradient(circle at top, #fffaf4, #f7eee6);
     color: #392d2b;
     font-family: "Cormorant Garamond", Georgia, serif;
     overflow-x: hidden;
@@ -40,20 +35,22 @@ body::before {
     z-index: -1;
 }
 
+img {
+    display: block;
+    max-width: 100%;
+}
+
 button,
 a {
     -webkit-tap-highlight-color: transparent;
 }
 
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+.foto:focus-visible,
+.marco-final:focus-visible {
     outline: 3px solid #a53c49;
     outline-offset: 6px;
-}
-
-img {
-    display: block;
-    max-width: 100%;
 }
 
 #pagina {
@@ -170,7 +167,6 @@ img {
 .progress-bar {
     width: 100%;
     height: 4px;
-
     margin-bottom: 12px;
 
     background: #ded1cb;
@@ -200,17 +196,21 @@ img {
 .bloqueado {
     opacity: 0;
     height: 0;
+
     overflow: hidden;
     visibility: hidden;
     pointer-events: none;
+
     transform: translateY(30px);
 }
 
 .desbloqueado {
     opacity: 1;
     height: auto;
+
     visibility: visible;
     pointer-events: auto;
+
     transform: translateY(0);
 }
 
@@ -268,11 +268,12 @@ img {
 
 /* =========================================================
    GALERÍA PRINCIPAL
-   Altura automática para todas las fotografías
 ========================================================= */
 
 .galeria {
     width: min(1100px, 88%);
+    height: auto;
+
     margin: 0 auto;
     padding: 30px 0 45px;
 
@@ -294,10 +295,16 @@ img {
     background: #fff;
     border-radius: 3px;
 
-    box-shadow: 0 15px 35px rgba(50, 30, 30, 0.15);
+    box-shadow: 0 15px 35px rgba(50, 30, 30, 0.18);
 
     transform: rotate(var(--giro));
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
+
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
+
+    cursor: zoom-in;
+    touch-action: manipulation;
 }
 
 .foto:nth-child(6n + 1) {
@@ -327,19 +334,17 @@ img {
 .foto img {
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 5;
 
-    /* Muestra la imagen completa sin recortar */
+    aspect-ratio: auto;
     object-fit: contain;
     object-position: center;
 
-    background: #faf7f3;
     user-select: none;
 }
 
 
 /* =========================================================
-   SEPARADORES
+   SEPARADOR
 ========================================================= */
 
 .separador {
@@ -368,8 +373,10 @@ img {
 
 .emojis {
     margin-top: 25px;
+
     font-size: clamp(28px, 6vw, 38px);
     letter-spacing: 3px;
+
     color: #a53c49;
     overflow-wrap: anywhere;
 }
@@ -412,6 +419,7 @@ img {
 
 .celebracion {
     padding: 100px 24px;
+
     text-align: center;
 
     background: #3d2f2d;
@@ -440,7 +448,7 @@ img {
 
 
 /* =========================================================
-   LAS TRES FOTOS FINALES
+   TRES FOTOS FINALES
 ========================================================= */
 
 .foto-final {
@@ -454,49 +462,59 @@ img {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: center;
+
     gap: 34px;
 }
 
 .marco-final {
+    --giro: -3deg;
+
     position: relative;
     min-width: 0;
 
-    background: #fff;
     padding: 12px 12px 40px;
+
+    background: #fff;
     border-radius: 3px;
 
     box-shadow: 0 20px 45px rgba(50, 30, 30, 0.18);
 
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    transform: rotate(var(--giro));
+
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
+
+    cursor: zoom-in;
+    touch-action: manipulation;
 }
 
 .marco-final:nth-child(1) {
-    transform: rotate(-4deg);
+    --giro: -4deg;
 }
 
 .marco-final:nth-child(2) {
-    transform: translateY(-18px) rotate(2deg);
+    --giro: 3deg;
 }
 
 .marco-final:nth-child(3) {
-    transform: rotate(-3deg);
+    --giro: -2deg;
 }
 
 .marco-final img {
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 5;
 
+    aspect-ratio: auto;
     object-fit: contain;
     object-position: center;
 
-    background: #faf7f3;
     user-select: none;
 }
 
 
 /* =========================================================
-   EFECTOS SOLO EN DISPOSITIVOS CON RATÓN
+   EFECTOS CON RATÓN
 ========================================================= */
 
 @media (hover: hover) and (pointer: fine) {
@@ -547,6 +565,7 @@ img {
 
 .save-button {
     border: 1px solid #8c6d68;
+
     background: transparent;
     color: #493835;
 
@@ -572,11 +591,11 @@ img {
 
 footer {
     padding: 45px 20px;
-
     text-align: center;
 
     font-family: "Montserrat", sans-serif;
     font-size: 11px;
+
     letter-spacing: 2px;
     text-transform: uppercase;
 
@@ -593,6 +612,128 @@ footer span {
 
 
 /* =========================================================
+   VISOR: FOTO COMPLETA, CENTRADA Y SIN RECORTAR
+========================================================= */
+
+dialog.visor-fotos {
+    --espacio-superior: max(65px, env(safe-area-inset-top));
+    --espacio-inferior: max(25px, env(safe-area-inset-bottom));
+
+    position: fixed;
+    inset: 0;
+
+    box-sizing: border-box;
+
+    width: 100%;
+    max-width: none;
+
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+
+    margin: 0;
+
+    padding:
+        var(--espacio-superior)
+        16px
+        var(--espacio-inferior);
+
+    border: none;
+    border-radius: 0;
+
+    background: rgba(15, 12, 12, 0.97);
+    color: #fff;
+
+    overflow: hidden;
+    overscroll-behavior: contain;
+}
+
+dialog.visor-fotos:not([open]) {
+    display: none;
+}
+
+dialog.visor-fotos[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+dialog.visor-fotos::backdrop {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+dialog.visor-fotos > img {
+    display: block;
+    box-sizing: border-box;
+
+    flex: 0 1 auto;
+
+    min-width: 0;
+    min-height: 0;
+
+    width: auto;
+    height: auto;
+
+    max-width: 100%;
+
+    max-height: calc(
+        100vh - var(--espacio-superior) - var(--espacio-inferior)
+    );
+
+    max-height: calc(
+        100dvh - var(--espacio-superior) - var(--espacio-inferior)
+    );
+
+    aspect-ratio: auto;
+
+    object-fit: contain;
+    object-position: center;
+
+    margin: 0;
+    padding: 0;
+
+    border: 6px solid #fff;
+    border-radius: 3px;
+
+    background: transparent;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+
+    transform: none;
+}
+
+dialog.visor-fotos > .visor-cerrar {
+    position: absolute;
+
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+
+    z-index: 2;
+
+    display: grid;
+    place-items: center;
+
+    width: 44px;
+    height: 44px;
+
+    margin: 0;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #fff;
+    color: #392d2b;
+
+    font-family: Arial, sans-serif;
+    font-size: 32px;
+    line-height: 1;
+
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+
+/* =========================================================
    OVERLAY GUARDAR IMAGEN
 ========================================================= */
 
@@ -605,6 +746,7 @@ footer span {
 
     overflow-y: auto;
     overscroll-behavior: contain;
+
     padding: 65px 15px 30px;
 
     -webkit-overflow-scrolling: touch;
@@ -612,6 +754,7 @@ footer span {
 
 .guardar-contenido {
     position: relative;
+
     width: min(600px, 100%);
     margin: 0 auto;
 
@@ -633,8 +776,11 @@ footer span {
 }
 
 #imagen-generada {
+    display: block;
+
     width: 100%;
     height: auto;
+
     margin: 0 auto 30px;
     border-radius: 8px;
 }
@@ -661,10 +807,12 @@ footer span {
 
 .boton-descargar {
     display: inline-block;
+
     margin-bottom: 50px;
     padding: 16px 30px;
 
     border-radius: 40px;
+
     background: #fff;
     color: #000;
 
@@ -679,14 +827,13 @@ footer span {
    TABLET
 ========================================================= */
 
-@media (max-width: 900px) {
+@media (min-width: 601px) and (max-width: 900px) {
     .galeria {
         width: 86%;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 48px 32px;
     }
 
-    /* Centrar la última foto cuando queda una fila incompleta */
     .galeria > .foto:last-child:nth-child(odd) {
         grid-column: 1 / -1;
         width: calc((100% - 32px) / 2);
@@ -705,23 +852,20 @@ footer span {
 
     .marco-final:nth-child(1) {
         justify-self: start;
-        transform: rotate(-4deg);
     }
 
     .marco-final:nth-child(2) {
         justify-self: end;
-        transform: rotate(3deg);
     }
 
     .marco-final:nth-child(3) {
         justify-self: center;
-        transform: rotate(-2deg);
     }
 }
 
 
 /* =========================================================
-   MÓVIL
+   MÓVIL: FOTOS GRANDES, UNA DEBAJO DE OTRA
 ========================================================= */
 
 @media (max-width: 600px) {
@@ -756,20 +900,48 @@ footer span {
         margin-top: 20px;
     }
 
+    .galeria,
+    .galeria-final {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        width: min(420px, 82%);
+        height: auto;
+
+        margin: 0 auto;
+        gap: 45px;
+    }
+
     .galeria {
-        width: min(360px, 80%);
-        grid-template-columns: 1fr;
-        gap: 40px;
-        padding: 20px 0 35px;
+        padding: 25px 0 40px;
     }
 
-    .foto {
-        padding: 9px 9px 30px;
-    }
-
-    .galeria > .foto:last-child:nth-child(odd) {
-        grid-column: auto;
+    .foto,
+    .marco-final {
         width: 100%;
+        min-width: 0;
+
+        padding: 10px 10px 35px;
+    }
+
+    .foto:nth-child(odd),
+    .marco-final:nth-child(odd) {
+        --giro: -3deg;
+    }
+
+    .foto:nth-child(even),
+    .marco-final:nth-child(even) {
+        --giro: 3deg;
+    }
+
+    .foto img,
+    .marco-final img {
+        width: 100%;
+        height: auto;
+
+        aspect-ratio: auto;
+        object-fit: contain;
     }
 
     .separador {
@@ -803,16 +975,6 @@ footer span {
         padding: 80px 0 70px;
     }
 
-    .galeria-final {
-        width: min(370px, 80%);
-        gap: 45px;
-    }
-
-    .marco-final {
-        width: 100%;
-        padding: 10px 10px 35px;
-    }
-
     .despedida {
         padding: 30px 20px 65px;
     }
@@ -829,7 +991,7 @@ footer span {
 
 
 /* =========================================================
-   ACCESIBILIDAD: MOVIMIENTO REDUCIDO
+   ACCESIBILIDAD
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
